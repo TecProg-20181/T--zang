@@ -86,8 +86,38 @@ def deps_text(task, chat, preceed=''):
 
     return text
 
+def botCore(command, taskID, chat):
+    
+    if command == '/new':
+
+        task = Task(chat=chat, name=taskID, status='TODO', dependencies='', parents='', priority='')
+        db.session.add(task)
+        db.session.commit()
+        send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
+
+def checkTaskId(taskID, chat):
+    if not taskID.isdigit():
+        return send_message("You must inform the task id", chat)
+    else:
+        taskIDint = int(taskID)
+        query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
+        try:
+            task = query.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
+            return False
+        return True
+
+def returnTask(taskID, chat):
+
+    taskIDint = int(taskID)
+    query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
+    task = query.one()
+    return task, taskIDint
+    
 
 def handle_updates(updates):
+
     for update in updates["result"]:
         if 'message' in update:
             message = update['message']
@@ -107,10 +137,7 @@ def handle_updates(updates):
         print(command, taskID, chat)
 
         if command == '/new':
-            task = Task(chat=chat, name=taskID, status='TODO', dependencies='', parents='', priority='')
-            db.session.add(task)
-            db.session.commit()
-            send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
+            botCore(command, taskID, chat)
 
         elif command == '/rename':
 
@@ -169,65 +196,45 @@ def handle_updates(updates):
                 send_message("New task *TODO* [[{}]] {}".format(dtask.id, dtask.name), chat)
 
         elif command == '/delete':
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+            
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
+
                 for t in task.dependencies.split(',')[:-1]:
                     qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
                     t = qy.one()
                     t.parents = t.parents.replace('{},'.format(task.id), '')
                 db.session.delete(task)
                 db.session.commit()
-                send_message("Task [[{}]] deleted".format(taskIDint), chat)
+                send_message("Task [[{}]] deleted".format(taskIDint), chat)     
 
         elif command == '/todo':
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
+
                 task.status = 'TODO'
                 db.session.commit()
                 send_message("*TODO* task [[{}]] {}".format(task.id, task.name), chat)
 
         elif command == '/doing':
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
+
                 task.status = 'DOING'
                 db.session.commit()
                 send_message("*DOING* task [[{}]] {}".format(task.id, task.name), chat)
 
         elif command == '/done':
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+            
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
+
                 task.status = 'DONE'
                 db.session.commit()
                 send_message("*DONE* task [[{}]] {}".format(task.id, task.name), chat)
@@ -324,15 +331,15 @@ def handle_updates(updates):
                 
         elif command == '/priority':
             text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
+            if taskID != '':
+                if len(taskID.split(' ', 1)) > 1:
+                    text = taskID.split(' ', 1)[1]
+                taskID = taskID.split(' ', 1)[0]
 
-            if not msg.isdigit():
+            if not taskID.isdigit():
                 send_message("You must inform the task id", chat)
             else:
-                task_id = int(msg)
+                task_id = int(taskID)
                 query = db.session.query(Task).filter_by(id=task_id, chat=chat)
                 try:
                     task = query.one()
