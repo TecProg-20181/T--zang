@@ -309,6 +309,42 @@ def returnTask(taskID, chat):
     query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
     task = query.one()
     return task, taskIDint
+
+def startBotFunctions(command, taskID, chat):
+    if command == '/new':
+        newTask(taskID, chat)
+
+    elif command == '/rename':
+        renameTask(taskID,chat)
+
+    elif command == '/duplicate':
+        duplicateTask(taskID, chat)
+
+    elif command == '/delete':
+        deleteTask(taskID, chat)   
+
+    elif command == '/todo' or command == '/doing' or command == '/done':
+        setTaskStatus(command, taskID, chat)
+
+    elif command == '/list':
+        listTasks(chat)
+
+    elif command == '/dependson':
+        dependson(taskID, chat)
+                
+    elif command == '/priority':
+        setTaskPriority(taskID, chat)
+
+    elif command == '/start':
+        send_message("Welcome! Here is a list of things you can do.", chat)
+        send_message(HELP, chat)
+
+    elif command == '/help':
+        send_message("Here is a list of things you can do.", chat)
+        send_message(HELP, chat)
+        
+    else:
+        send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
     
 
 def handle_updates(updates):
@@ -332,38 +368,7 @@ def handle_updates(updates):
 
         print(command, taskID, chat)
 
-        if command == '/new':
-            newTask(taskID, chat)
-
-        elif command == '/rename':
-            renameTask(taskID,chat)
-
-        elif command == '/duplicate':
-            duplicateTask(taskID, chat)
-
-        elif command == '/delete':
-            deleteTask(taskID, chat)   
-
-        elif command == '/todo' or command == '/doing' or command == '/done':
-            setTaskStatus(command, taskID, chat)
-
-        elif command == '/list':
-            listTasks(chat)
-
-        elif command == '/dependson':
-            dependson(taskID, chat)
-                
-        elif command == '/priority':
-            setTaskPriority(taskID, chat)
-            
-        elif command == '/start':
-            send_message("Welcome! Here is a list of things you can do.", chat)
-            send_message(HELP, chat)
-        elif command == '/help':
-            send_message("Here is a list of things you can do.", chat)
-            send_message(HELP, chat)
-        else:
-            send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
+        startBotFunctions(command, taskID, chat)
 
 
 def main():
