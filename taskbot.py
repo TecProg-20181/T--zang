@@ -10,7 +10,10 @@ import sqlalchemy
 import db
 from db import Task
 
-TOKEN = ""
+##Loading TOKEN from external file
+with open('token.txt', 'r') as tokenfile:
+  TOKEN = tokenfile.read()
+
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 HELP = """
@@ -113,7 +116,9 @@ def handle_updates(updates):
             text = ''
             if msg != '':
                 if len(msg.split(' ', 1)) > 1:
+                    ## Text -> novo nome da tarefa
                     text = msg.split(' ', 1)[1]
+                ## msg -> a id da tarefa 
                 msg = msg.split(' ', 1)[0]
 
             if not msg.isdigit():
