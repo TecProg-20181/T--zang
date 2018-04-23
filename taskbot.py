@@ -275,24 +275,24 @@ def handle_updates(updates):
             send_message(botStatusMessage, chat)
 
         elif command == '/dependson':
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    text = msg.split(' ', 1)[1]
-                msg = msg.split(' ', 1)[0]
+            dependson = ''
+            if taskID != '':
+                if len(taskID.split(' ', 1)) > 1:
+                    dependson = taskID.split(' ', 1)[1]
+                taskID = taskID.split(' ', 1)[0]
 
-            if not msg.isdigit():
+            if not taskID.isdigit():
                 send_message("You must inform the task id", chat)
             else:
-                task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+                taskIDint = int(taskID)
+                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
                 try:
                     task = query.one()
                 except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
                     return
 
-                if text == '':
+                if dependson == '':
                     for i in task.dependencies.split(',')[:-1]:
                         i = int(i)
                         q = db.session.query(Task).filter_by(id=i, chat=chat)
@@ -300,9 +300,9 @@ def handle_updates(updates):
                         t.parents = t.parents.replace('{},'.format(task.id), '')
 
                     task.dependencies = ''
-                    send_message("Dependencies removed from task {}".format(task_id), chat)
+                    send_message("Dependencies removed from task {}".format(taskIDint), chat)
                 else:
-                    for depid in text.split(' '):
+                    for depid in dependson.split(' '):
                         if not depid.isdigit():
                             send_message("All dependencies ids must be numeric, and not {}".format(depid), chat)
                         else:
@@ -320,7 +320,8 @@ def handle_updates(updates):
                                 task.dependencies += str(depid) + ','
 
                 db.session.commit()
-                send_message("Task {} dependencies up to date".format(task_id), chat)
+                send_message("Task {} dependencies up to date".format(taskIDint), chat)
+                
         elif command == '/priority':
             text = ''
             if msg != '':
