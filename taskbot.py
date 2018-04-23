@@ -150,19 +150,12 @@ def handle_updates(updates):
                 
                 taskID = taskID.split(' ', 1)[0]
 
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
 
                 if newName == '':
-                    send_message("You want to modify task {}, but you didn't provide any new text".format(taskIDint), chat)
+                    send_message("You want to modify task {}, but you didn't provide any new name".format(taskIDint), chat)
                     return
 
                 old_name = task.name
@@ -172,28 +165,21 @@ def handle_updates(updates):
 
         elif command == '/duplicate':
 
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+            if checkTaskId(taskID, chat):
 
-                dtask = Task(chat=task.chat, name=task.name, status=task.status, dependencies=task.dependencies,
+                task, taskIDint = returnTask(taskID, chat)
+
+                duplicatedTask = Task(chat=task.chat, name=task.name, status=task.status, dependencies=task.dependencies,
                              parents=task.parents, priority=task.priority, duedate=task.duedate)
-                db.session.add(dtask)
+                db.session.add(duplicatedTask)
 
                 for t in task.dependencies.split(',')[:-1]:
                     qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
                     t = qy.one()
-                    t.parents += '{},'.format(dtask.id)
+                    t.parents += '{},'.format(duplicatedTask.id)
 
                 db.session.commit()
-                send_message("New task *TODO* [[{}]] {}".format(dtask.id, dtask.name), chat)
+                send_message("New task *TODO* [[{}]] {}".format(duplicatedTask.id, duplicatedTask.name), chat)
 
         elif command == '/delete':
             
@@ -230,7 +216,7 @@ def handle_updates(updates):
                 send_message("*DOING* task [[{}]] {}".format(task.id, task.name), chat)
 
         elif command == '/done':
-            
+
             if checkTaskId(taskID, chat):
 
                 task, taskIDint = returnTask(taskID, chat)
@@ -288,16 +274,9 @@ def handle_updates(updates):
                     dependson = taskID.split(' ', 1)[1]
                 taskID = taskID.split(' ', 1)[0]
 
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                taskIDint = int(taskID)
-                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
-                    return
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
 
                 if dependson == '':
                     for i in task.dependencies.split(',')[:-1]:
@@ -336,26 +315,19 @@ def handle_updates(updates):
                     text = taskID.split(' ', 1)[1]
                 taskID = taskID.split(' ', 1)[0]
 
-            if not taskID.isdigit():
-                send_message("You must inform the task id", chat)
-            else:
-                task_id = int(taskID)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
-                try:
-                    task = query.one()
-                except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
-                    return
+            if checkTaskId(taskID, chat):
+
+                task, taskIDint = returnTask(taskID, chat)
 
                 if text == '':
                     task.priority = ''
-                    send_message("_Cleared_ all priorities from task {}".format(task_id), chat)
+                    send_message("_Cleared_ all priorities from task {}".format(taskIDint), chat)
                 else:
                     if text.lower() not in ['high', 'medium', 'low']:
                         send_message("The priority *must be* one of the following: high, medium, low", chat)
                     else:
                         task.priority = text.lower()
-                        send_message("*Task {}* priority has priority *{}*".format(task_id, text.lower()), chat)
+                        send_message("*Task {}* priority has priority *{}*".format(taskIDint, text.lower()), chat)
                 db.session.commit()
 
         elif command == '/start':
