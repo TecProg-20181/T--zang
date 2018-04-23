@@ -236,7 +236,7 @@ def listTodoTasks(chat):
     botTODOMessage = '\n\U0001F195 *TODO*\n'
 
     for task in query.all():
-        botTODOMessage += '[[{}]] {}\n'.format(task.id, task.name)
+        botTODOMessage += '[[{}]] {}'.format(task.id, task.name)
 
     return botTODOMessage
 
@@ -275,7 +275,10 @@ def listTasks(chat):
         elif task.status == 'DONE':
             icon = '\U00002611'
 
-        botStatusMessage += '[[{}]] {} {}\n'.format(task.id, icon, task.name)
+        botStatusMessage += '[[{}]] {} {}'.format(task.id, icon, task.name)
+        if task.priority != '':
+            botStatusMessage += ' | priority: {}'.format(task.priority)
+        botStatusMessage += '\n'
         botStatusMessage += deps_text(task, chat)
 
     send_message(botStatusMessage, chat)
@@ -342,7 +345,7 @@ def startBotFunctions(command, taskID, chat):
     elif command == '/help':
         send_message("Here is a list of things you can do.", chat)
         send_message(HELP, chat)
-        
+
     else:
         send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
     
