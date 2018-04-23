@@ -233,10 +233,12 @@ def handle_updates(updates):
                 send_message("*DONE* task [[{}]] {}".format(task.id, task.name), chat)
 
         elif command == '/list':
-            a = ''
+            
+            botStatusMessage = ''
 
-            a += '\U0001F4CB Task List\n'
+            botStatusMessage += '\U0001F4CB Task List\n'
             query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
+            
             for task in query.all():
                 icon = '\U0001F195'
                 if task.status == 'DOING':
@@ -244,27 +246,34 @@ def handle_updates(updates):
                 elif task.status == 'DONE':
                     icon = '\U00002611'
 
-                a += '[[{}]] {} {}\n'.format(task.id, icon, task.name)
-                a += deps_text(task, chat)
+                botStatusMessage += '[[{}]] {} {}\n'.format(task.id, icon, task.name)
+                botStatusMessage += deps_text(task, chat)
 
-            send_message(a, chat)
-            a = ''
+            send_message(botStatusMessage, chat)
 
-            a += '\U0001F4DD _Status_\n'
+            botStatusMessage = ''
+
+            botStatusMessage += '\U0001F4DD _Status_\n'
             query = db.session.query(Task).filter_by(status='TODO', chat=chat).order_by(Task.id)
-            a += '\n\U0001F195 *TODO*\n'
-            for task in query.all():
-                a += '[[{}]] {}\n'.format(task.id, task.name)
-            query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
-            a += '\n\U000023FA *DOING*\n'
-            for task in query.all():
-                a += '[[{}]] {}\n'.format(task.id, task.name)
-            query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
-            a += '\n\U00002611 *DONE*\n'
-            for task in query.all():
-                a += '[[{}]] {}\n'.format(task.id, task.name)
+            botStatusMessage += '\n\U0001F195 *TODO*\n'
 
-            send_message(a, chat)
+            for task in query.all():
+                botStatusMessage += '[[{}]] {}\n'.format(task.id, task.name)
+
+            query = db.session.query(Task).filter_by(status='DOING', chat=chat).order_by(Task.id)
+            botStatusMessage += '\n\U000023FA *DOING*\n'
+
+            for task in query.all():
+                botStatusMessage += '[[{}]] {}\n'.format(task.id, task.name)
+
+            query = db.session.query(Task).filter_by(status='DONE', chat=chat).order_by(Task.id)
+            botStatusMessage += '\n\U00002611 *DONE*\n'
+
+            for task in query.all():
+                botStatusMessage += '[[{}]] {}\n'.format(task.id, task.name)
+
+            send_message(botStatusMessage, chat)
+
         elif command == '/dependson':
             text = ''
             if msg != '':
