@@ -113,33 +113,36 @@ def handle_updates(updates):
             send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
 
         elif command == '/rename':
-            text = ''
-            if msg != '':
-                if len(msg.split(' ', 1)) > 1:
-                    ## Text -> novo nome da tarefa
-                    text = msg.split(' ', 1)[1]
-                ## msg -> a id da tarefa 
-                msg = msg.split(' ', 1)[0]
+            newName = ''
+            taskID = msg
 
-            if not msg.isdigit():
+            if taskID != '':
+                if len(taskID.split(' ', 1)) > 1:
+                    ## Text -> novo nome da tarefa
+                    newName = taskID.split(' ', 1)[1]
+                ## msg -> a id da tarefa 
+                taskID = taskID.split(' ', 1)[0]
+
+            if not taskID.isdigit():
                 send_message("You must inform the task id", chat)
             else:
-                task_id = int(msg)
-                query = db.session.query(Task).filter_by(id=task_id, chat=chat)
+                taskIDint = int(taskID)
+                query = db.session.query(Task).filter_by(id=taskIDint, chat=chat)
                 try:
                     task = query.one()
                 except sqlalchemy.orm.exc.NoResultFound:
-                    send_message("_404_ Task {} not found x.x".format(task_id), chat)
+                    send_message("_404_ Task {} not found x.x".format(taskIDint), chat)
                     return
 
-                if text == '':
-                    send_message("You want to modify task {}, but you didn't provide any new text".format(task_id), chat)
+                if newName == '':
+                    send_message("You want to modify task {}, but you didn't provide any new text".format(taskIDint), chat)
                     return
 
-                old_text = task.name
-                task.name = text
+                old_name = task.name
+                task.name = newName
                 db.session.commit()
-                send_message("Task {} redefined from {} to {}".format(task_id, old_text, text), chat)
+                send_message("Task {} redefined from {} to {}".format(taskIDint, old_name, newName), chat)
+                
         elif command == '/duplicate':
             if not msg.isdigit():
                 send_message("You must inform the task id", chat)
