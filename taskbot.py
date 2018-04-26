@@ -179,14 +179,21 @@ def dependson(taskID, chat):
                     query = db.session.query(Task).filter_by(id=depid, chat=chat)
                     try:
                         taskdep = query.one()
-                        taskdep.parents += str(task.id) + ','
                     except sqlalchemy.orm.exc.NoResultFound:
                         send_message("_404_ Task {} not found x.x".format(depid), chat)
                         continue
 
                     deplist = task.dependencies.split(',')
                     if str(depid) not in deplist:
-                        task.dependencies += str(depid) + ','
+
+                    	deplist2 = taskdep.dependencies.split(',')
+
+                    	if str(task.id) not in deplist2:
+                    		task.dependencies += str(depid) + ','
+                    		taskdep.parents += str(task.id) + ','
+                    	else:
+                    		send_message("Cannot do request. It will generate Circular dependencies", chat)
+
 
         db.session.commit()
         send_message("Task {} dependencies up to date".format(taskIDint), chat)
@@ -236,7 +243,7 @@ def listTodoTasks(chat):
     botTODOMessage = '\n\U0001F195 *TODO*\n'
 
     for task in query.all():
-        botTODOMessage += '[[{}]] {}'.format(task.id, task.name)
+        botTODOMessage += '[[{}]] {}\n'.format(task.id, task.name)
 
     return botTODOMessage
 
@@ -267,6 +274,14 @@ def listTasks(chat):
 
     botStatusMessage += '\U0001F4CB Task List\n'
     query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
+    print('-------------------')
+    print('-------------------')
+    print('')
+    print(query.all())
+    print('')
+    print('-------------------')
+    print('-------------------')
+    
             
     for task in query.all():
         icon = '\U0001F195'
@@ -314,6 +329,7 @@ def returnTask(taskID, chat):
     return task, taskIDint
 
 def startBotFunctions(command, taskID, chat):
+	
     if command == '/new':
         newTask(taskID, chat)
 
