@@ -16,20 +16,6 @@ with open('token.txt', 'r') as tokenfile:
 
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
-HELP = """
- /new NOME
- /todo ID
- /doing ID
- /done ID
- /delete ID
- /list
- /rename ID NOME
- /dependson ID ID...
- /duplicate ID
- /priority ID PRIORITY{low, medium, high}
- /help
-"""
-
 def get_url(url):
     response = requests.get(url)
     content = response.content.decode("utf8")
@@ -326,41 +312,54 @@ def returnTask(taskID, chat):
     return task, taskIDint
 
 def startBotFunctions(command, taskID, chat):
+
+	HELP = """
+		 /new <task name>
+		 /todo <task id>
+		 /doing <task id>
+		 /done <task id>
+		 /delete <task id>
+		 /list | To list all tasks and it's status
+		 /rename <task id> <new task name>
+		 /dependson <task id> <task id> ...
+		 /duplicate <task id>
+		 /priority <task id> <{low, medium, high}>
+		 /help | to show available commands
+		"""
+	if command == '/start':
+		send_message("Welcome! Here is a list of things you can do.", chat)
+		send_message(HELP, chat)
+
+	elif command == '/help':
+		send_message("Here is a list of things you can do.", chat)
+		send_message(HELP, chat)
 	
-    if command == '/new':
-        newTask(taskID, chat)
-
-    elif command == '/rename':
-        renameTask(taskID,chat)
-
-    elif command == '/duplicate':
-        duplicateTask(taskID, chat)
-
-    elif command == '/delete':
-        deleteTask(taskID, chat)   
-
-    elif command == '/todo' or command == '/doing' or command == '/done':
-        setTaskStatus(command, taskID, chat)
-
-    elif command == '/list':
-        listTasks(chat)
-
-    elif command == '/dependson':
-        dependson(taskID, chat)
-                
-    elif command == '/priority':
-        setTaskPriority(taskID, chat)
-
-    elif command == '/start':
-        send_message("Welcome! Here is a list of things you can do.", chat)
-        send_message(HELP, chat)
-
-    elif command == '/help':
-        send_message("Here is a list of things you can do.", chat)
-        send_message(HELP, chat)
-
-    else:
-        send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
+	elif command == '/new':
+		newTask(taskID, chat)
+	
+	elif command == '/rename':
+		renameTask(taskID,chat)
+	
+	elif command == '/duplicate':
+		duplicateTask(taskID, chat)
+	
+	elif command == '/delete':
+		deleteTask(taskID, chat)
+	
+	elif command == '/todo' or command == '/doing' or command == '/done':
+		setTaskStatus(command, taskID, chat)
+	
+	elif command == '/list':
+		listTasks(chat)
+	
+	elif command == '/dependson':
+		dependson(taskID, chat)
+	
+	elif command == '/priority':
+		setTaskPriority(taskID, chat)
+	
+	else:
+		send_message("I'm sorry dave. I'm afraid I can't do that.", chat)
     
 
 def handle_updates(updates):
