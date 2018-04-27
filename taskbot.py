@@ -184,13 +184,17 @@ def dependson(taskID, chat):
                         continue
 
                     deplist = task.dependencies.split(',')
+
                     if str(depid) not in deplist:
 
-                    	deplist2 = taskdep.dependencies.split(',')
+                    	parentsList = task.parents.split(',')
 
-                    	if str(task.id) not in deplist2:
+                    	if str(taskdep.id) not in parentsList:
                     		task.dependencies += str(depid) + ','
                     		taskdep.parents += str(task.id) + ','
+                    		for i in range(len(parentsList)):
+                    			print(parentsList[i])
+                    			taskdep.parents += parentsList[i] + ','
                     	else:
                     		send_message("Cannot do request. It will generate Circular dependencies", chat)
 
@@ -274,13 +278,6 @@ def listTasks(chat):
 
     botStatusMessage += '\U0001F4CB Task List\n'
     query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
-    print('-------------------')
-    print('-------------------')
-    print('')
-    print(query.all())
-    print('')
-    print('-------------------')
-    print('-------------------')
     
             
     for task in query.all():
