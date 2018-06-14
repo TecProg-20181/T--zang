@@ -97,10 +97,10 @@ def renameTask(taskID, chat):
             send_message("You want to modify task {}, but you didn't provide any new name".format(taskIDint), chat)
             return
 
-        old_name = task.name
+        oldName = task.name
         task.name = newName
         db.session.commit()
-        send_message("Task {} redefined from {} to {}".format(taskIDint, old_name, newName), chat)
+        send_message("Task {} redefined from {} to {}".format(taskIDint, oldName, newName), chat)
 
 def duplicateTask(taskID, chat):
 
@@ -126,10 +126,10 @@ def deleteTask(taskID, chat):
 
         task, taskIDint = returnTask(taskID, chat)
 
-        for t in task.dependencies.split(',')[:-1]:
-            qy = db.session.query(Task).filter_by(id=int(t), chat=chat)
-            t = qy.one()
-            t.parents = t.parents.replace('{},'.format(task.id), '')
+        for dependency_id in task.dependencies.split(',')[:-1]:
+            query = db.session.query(Task).filter_by(id=int(dependency_id), chat=chat)
+            dependency = query.one()
+            dependency.parents = ''
 
         db.session.delete(task)
         db.session.commit()
@@ -264,8 +264,7 @@ def listTasks(chat):
 
     botStatusMessage += '\U0001F4CB Task List\n'
     query = db.session.query(Task).filter_by(parents='', chat=chat).order_by(Task.id)
-    
-            
+       
     for task in query.all():
         icon = '\U0001F195'
         if task.status == 'DOING':
@@ -320,7 +319,7 @@ def startBotFunctions(command, taskID, chat):
 		 /done <task id>
 		 /delete <task id>
 		 /list | To list all tasks and it's status
-		 /rename <task id> <new task name>
+		 /rename <task id> <new name>
 		 /dependson <task id> <task id> ...
 		 /duplicate <task id>
 		 /priority <task id> <{low, medium, high}>
