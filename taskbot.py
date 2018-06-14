@@ -148,11 +148,11 @@ def dependson(taskID, chat):
         task, taskIDint = returnTask(taskID, chat)
 
         if dependson == '':
-            for i in task.dependencies.split(',')[:-1]:
-                i = int(i)
-                q = db.session.query(Task).filter_by(id=i, chat=chat)
-                t = q.one()
-                t.parents = t.parents.replace('{},'.format(task.id), '')
+            for dependency_id in task.dependencies.split(',')[:-1]:
+                dependency_id = int(dependency_id)
+                query = db.session.query(Task).filter_by(id=dependency_id, chat=chat)
+                dependency = query.one()
+                dependency.parents = ''
 
             task.dependencies = ''
             send_message("Dependencies removed from task {}".format(taskIDint), chat)
