@@ -238,20 +238,24 @@ def setTaskPriority(taskID, chat):
 
 def setTaskStatus(command, taskID, chat):
 
-	if command == '/todo':
-		status = 'TODO'
-	elif command == '/doing':
-		status = 'DOING'
-	elif command == '/done':
-		status = 'DONE'
+	id_list = taskID.split(" ")
 
-	if checkTaskId(taskID, chat):
-		
-		task, taskIDint = returnTask(taskID, chat)
+	for task_id in id_list:
 
-		task.status = status
-		db.session.commit()
-		send_message("*{}* task [[{}]] {}".format(task.status, task.id, task.name), chat)
+		if command == '/todo':
+			status = 'TODO'
+		elif command == '/doing':
+			status = 'DOING'
+		elif command == '/done':
+			status = 'DONE'
+
+		if checkTaskId(task_id, chat):
+			
+			task, taskIDint = returnTask(task_id, chat)
+
+			task.status = status
+			db.session.commit()
+			send_message("*{}* task [[{}]] {}".format(task.status, task.id, task.name), chat)
 
 def listTodoTasks(chat):
 
