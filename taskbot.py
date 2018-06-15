@@ -13,7 +13,7 @@ from datetime import datetime
 
 ##Loading TOKEN from external file
 with open('token.txt', 'r') as tokenfile:
-  TOKEN = tokenfile.read()
+	TOKEN = tokenfile.read()
 
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
@@ -78,7 +78,30 @@ def newTask(taskID, chat):
 	task = Task(chat=chat, name=taskID, status='TODO', dependencies='', parents='', priority='')
 	db.session.add(task)
 	db.session.commit()
+	create_issue_github(task.name, chat)
 	send_message("New task *TODO* [[{}]] {}".format(task.id, task.name), chat)
+
+def create_issue_github(title, chat):
+    '''
+    	Function to create issue on github when creating new task
+    '''
+
+    with open('username.txt', 'r') as username:
+    	user = username.read()
+    with open('password.txt', 'r') as password:
+    	password = password.read()
+
+    url = 'https://api.github.com/repos/TecProg-20181/T--zang/issues'
+    session = requests.Session()
+    session.auth = (user, password)
+
+    issue = {'title': title}
+
+    response = session.post(url, json.dumps(issue))
+    if response.status_code == 201:
+        send_message("Created issue for task on github T--zang repo {}".format(title), chat)
+    else:
+        send_message("Error on creating issue for task on github {}".format(title), chat)
 
 def renameTask(taskID, chat):
 	newName = ''
